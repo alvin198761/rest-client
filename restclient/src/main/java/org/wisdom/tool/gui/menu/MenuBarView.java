@@ -29,11 +29,13 @@ import java.util.Locale;
 
 import javax.swing.BorderFactory;
 import javax.swing.JFileChooser;
+import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.ProgressMonitor;
+import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 
 import org.apache.commons.collections.MapUtils;
@@ -54,16 +56,16 @@ import org.wisdom.tool.thread.TestThd;
 import org.wisdom.tool.util.RESTUtil;
 import org.wisdom.tool.util.TestUtil;
 
-/** 
- * @ClassName: MenuBarView 
+/**
+ * @ClassName: MenuBarView
  * @Description: Menu bar view
  * @Author: Yudong (Dom) Wang
- * @Email: wisdomtool@qq.com 
- * @Date: Jan 20, 2017 12:30:29 PM 
- * @Version: Wisdom RESTClient V1.2 
+ * @Email: wisdomtool@qq.com
+ * @Date: Jan 20, 2017 12:30:29 PM
+ * @Version: Wisdom RESTClient V1.2
  */
-public class MenuBarView implements ActionListener, PropertyChangeListener
-{
+public class MenuBarView implements ActionListener, PropertyChangeListener {
+
     private static Logger log = LogManager.getLogger(MenuBarView.class);
 
     private JMenuBar mb = null;
@@ -84,24 +86,21 @@ public class MenuBarView implements ActionListener, PropertyChangeListener
 
     private AboutDialog ad = null;
 
-    class HistTask extends SwingWorker<Void, Void>
-    {
+    class HistTask extends SwingWorker<Void, Void> {
+
         private HttpHists hists = null;
 
-        public HistTask(HttpHists hists)
-        {
+        public HistTask(HttpHists hists) {
             super();
             this.hists = hists;
         }
 
         @Override
-        public Void doInBackground()
-        {
+        public Void doInBackground() {
             int done = 0;
             int progress = 0;
             this.setProgress(0);
-            while (progress < hists.getTotal() && !isCancelled())
-            {
+            while (progress < hists.getTotal() && !isCancelled()) {
                 progress = hists.progress();
                 done = Math.min(progress, hists.getTotal()) * 100 / hists.getTotal();
                 this.setProgress(done);
@@ -111,8 +110,7 @@ public class MenuBarView implements ActionListener, PropertyChangeListener
         }
 
         @Override
-        public void done()
-        {
+        public void done() {
             Toolkit.getDefaultToolkit().beep();
             miStart.setEnabled(true);
             pm.setProgress(0);
@@ -120,21 +118,19 @@ public class MenuBarView implements ActionListener, PropertyChangeListener
         }
     }
 
-    public MenuBarView()
-    {
+    public MenuBarView() {
         this.init();
     }
 
     /**
-    * 
-    * @Title: init 
-    * @Description: Component Initialization 
-    * @param
-    * @return void 
-    * @throws
+     *
+     * @Title: init
+     * @Description: Component Initialization
+     * @param
+     * @return void
+     * @throws
      */
-    private void init()
-    {
+    private void init() {
         JMenu mnFile = new JMenu(RESTConst.FILE);
         JMenu mnEdit = new JMenu(RESTConst.EDIT);
         JMenu mnTest = new JMenu(RESTConst.TEST);
@@ -149,7 +145,7 @@ public class MenuBarView implements ActionListener, PropertyChangeListener
 
         miImport.addActionListener(this);
         miImport.setToolTipText(RESTConst.IMPORT + " " + RESTConst.HIST);
-        
+
         miExport.addActionListener(this);
         miExport.setToolTipText(RESTConst.EXPORT + " " + RESTConst.HIST);
         miExit.addActionListener(this);
@@ -158,7 +154,7 @@ public class MenuBarView implements ActionListener, PropertyChangeListener
         mnFile.add(miExport);
         mnFile.addSeparator();
         mnFile.add(miExit);
-        
+
         // Menu of edit
         JMenuItem miResetReq = new JMenuItem(RESTConst.RESET_REQ);
         JMenuItem miResetRsp = new JMenuItem(RESTConst.RESET_RSP);
@@ -167,7 +163,7 @@ public class MenuBarView implements ActionListener, PropertyChangeListener
 
         miResetReq.addActionListener(this);
         miResetRsp.addActionListener(this);
-        
+
         miResetAll.addActionListener(this);
         miResetAll.setToolTipText(RESTConst.RESET + " " + RESTConst.REQUEST + " & " + RESTConst.RESPONSE);
 
@@ -203,33 +199,47 @@ public class MenuBarView implements ActionListener, PropertyChangeListener
         // Menu of API DOC
         JMenuItem miCreate = new JMenuItem(RESTConst.CREATE);
         JMenuItem miOpen = new JMenuItem(RESTConst.OPEN);
-        
+
         miCreate.setToolTipText(RESTConst.CREATE + " " + RESTConst.API_DOCUMENT);
         miCreate.addActionListener(this);
-        
+
         miOpen.setToolTipText(RESTConst.OPEN + " " + RESTConst.API_DOCUMENT);
         miOpen.addActionListener(this);
-        
+
         mnDoc.add(miCreate);
         mnDoc.addSeparator();
         mnDoc.add(miOpen);
-        
+
         // Menu of help
         JMenuItem miContent = new JMenuItem(RESTConst.HELP_CONTENTS);
         JMenuItem miIssue = new JMenuItem(RESTConst.REPORT_ISSUE);
         JMenuItem miDonate = new JMenuItem(RESTConst.DONATE);
         JMenuItem miAbout = new JMenuItem(RESTConst.ABOUT_TOOL);
+//        JMenuItem fontSetting = new JMenuItem("Font");
 
+        final SLFontDialog dialog = new SLFontDialog(RESTMain.font);
         miContent.addActionListener(this);
         miIssue.addActionListener(this);
         miDonate.addActionListener(this);
         miAbout.addActionListener(this);
+//        fontSetting.addActionListener(new ActionListener() {
+//            public void actionPerformed(ActionEvent e) {
+//                dialog.setVisible(true);
+//                RESTMain.font = dialog.getSelectedFont();
+//                RESTMain.initGlobalFont(RESTMain.font);
+//                JFrame frame = (JFrame) SwingUtilities.getWindowAncestor(mb);
+//                frame.validate();
+//                frame.repaint();
+////                frame.repaint();
+//            }
+//        });
 
         mnHelp.add(miContent);
         mnHelp.add(miIssue);
         mnHelp.addSeparator();
         mnHelp.add(miDonate);
         mnHelp.addSeparator();
+//        mnHelp.add(fontSetting);
         mnHelp.add(miAbout);
 
         ad = new AboutDialog();
@@ -247,101 +257,87 @@ public class MenuBarView implements ActionListener, PropertyChangeListener
         fc = new JFileChooser();
     }
 
-    public JMenuBar getJMenuBar()
-    {
+    public JMenuBar getJMenuBar() {
         return mb;
     }
 
     /**
-    * 
-    * @Title: filePerformed 
-    * @Description: File Menu Item Performed
-    * @param @param item
-    * @return void 
-    * @throws
+     *
+     * @Title: filePerformed
+     * @Description: File Menu Item Performed
+     * @param @param item
+     * @return void
+     * @throws
      */
-    private void filePerformed(JMenuItem item)
-    {
-        if (RESTConst.IMPORT.equals(item.getText()))
-        {
+    private void filePerformed(JMenuItem item) {
+        if (RESTConst.IMPORT.equals(item.getText())) {
             String content = UIUtil.openFile(RESTView.getView(), fc);
             HttpHists hists = RESTUtil.toOject(content, HttpHists.class);
             UIUtil.setRESTView(hists);
             return;
         }
 
-        if (RESTConst.EXPORT.equals(item.getText()))
-        {
+        if (RESTConst.EXPORT.equals(item.getText())) {
             UIUtil.saveFile(RESTView.getView(), fc);
             return;
         }
 
-        if (RESTConst.EXIT.equals(item.getText()))
-        {
+        if (RESTConst.EXIT.equals(item.getText())) {
             RESTMain.closeView();
             return;
         }
     }
-    
+
     /**
-    * 
-    * @Title: editPerformed 
-    * @Description: Edit Menu Item Performed 
-    * @param @param item 
-    * @return void 
-    * @throws
+     *
+     * @Title: editPerformed
+     * @Description: Edit Menu Item Performed
+     * @param @param item
+     * @return void
+     * @throws
      */
-    private void editPerformed(JMenuItem item)
-    {
-        if (RESTConst.RESET_REQ.equals(item.getText()))
-        {
+    private void editPerformed(JMenuItem item) {
+        if (RESTConst.RESET_REQ.equals(item.getText())) {
             RESTView.getView().getReqView().reset();
             return;
         }
 
-        if (RESTConst.RESET_RSP.equals(item.getText()))
-        {
+        if (RESTConst.RESET_RSP.equals(item.getText())) {
             RESTView.getView().getRspView().reset();
             return;
         }
 
-        if (RESTConst.RESET_ALL.equals(item.getText()))
-        {
+        if (RESTConst.RESET_ALL.equals(item.getText())) {
             RESTView.getView().getReqView().reset();
             RESTView.getView().getRspView().reset();
             return;
         }
 
-        if (RESTConst.RM_ALL.equals(item.getText()))
-        {
+        if (RESTConst.RM_ALL.equals(item.getText())) {
             JOptionPane.setDefaultLocale(Locale.US);
-            int ret = JOptionPane.showConfirmDialog(RESTView.getView(), 
-                                                    RESTConst.CONFIRM_RM_ALL, 
-                                                    RESTConst.RM_ALL, 
-                                                    JOptionPane.YES_NO_OPTION);
-            if (0 == ret)
-            {
+            int ret = JOptionPane.showConfirmDialog(RESTView.getView(),
+                    RESTConst.CONFIRM_RM_ALL,
+                    RESTConst.RM_ALL,
+                    JOptionPane.YES_NO_OPTION);
+            if (0 == ret) {
                 RESTCache.getHists().clear();
                 RESTView.getView().getHistView().getTabMdl().clear();
             }
             return;
         }
     }
-    
+
     /**
-    * 
-    * @Title: testPerformed 
-    * @Description: Test Menu Item Performed 
-    * @param @param item
-    * @return void
-    * @throws
+     *
+     * @Title: testPerformed
+     * @Description: Test Menu Item Performed
+     * @param @param item
+     * @return void
+     * @throws
      */
-    private void testPerformed(JMenuItem item)
-    {
-        if (RESTConst.START_TEST.equals(item.getText()))
-        {
-            if (MapUtils.isEmpty(RESTCache.getHists()))
-            {
+    private void testPerformed(JMenuItem item) {
+        if (RESTConst.START_TEST.equals(item.getText())) {
+            if (MapUtils.isEmpty(RESTCache.getHists())) {
                 return;
             }
 
@@ -362,15 +358,12 @@ public class MenuBarView implements ActionListener, PropertyChangeListener
             RESTThdPool.getInstance().getPool().submit(testThrd);
         }
 
-        if (RESTConst.STOP_TEST.equals(item.getText()))
-        {
-            if (null == testThrd)
-            {
+        if (RESTConst.STOP_TEST.equals(item.getText())) {
+            if (null == testThrd) {
                 return;
             }
 
-            try
-            {
+            try {
                 miStop.setEnabled(false);
 
                 pm.close();
@@ -380,114 +373,92 @@ public class MenuBarView implements ActionListener, PropertyChangeListener
                 testThrd.interrupt();
 
                 miStart.setEnabled(true);
-            }
-            catch(Exception ex)
-            {
+            } catch (Exception ex) {
                 log.error("Failed to interrupt test thread.", ex);
             }
         }
 
-        if (RESTConst.TEST_REPORT.equals(item.getText()))
-        {
-            TestUtil.open(RESTConst.REPORT_HTML, 
-                          RESTConst.MSG_REPORT, 
-                          RESTConst.TEST_REPORT);
+        if (RESTConst.TEST_REPORT.equals(item.getText())) {
+            TestUtil.open(RESTConst.REPORT_HTML,
+                    RESTConst.MSG_REPORT,
+                    RESTConst.TEST_REPORT);
         }
 
     }
 
     /**
-    * 
-    * @Title: apiDocPerformed 
-    * @Description: API DOC Menu Item Performed 
-    * @param @param item 
-    * @return void 
-    * @throws
+     *
+     * @Title: apiDocPerformed
+     * @Description: API DOC Menu Item Performed
+     * @param @param item
+     * @return void
+     * @throws
      */
-    private void apiDocPerformed(JMenuItem item)
-    {
-        if (RESTConst.CREATE.equals(item.getText()))
-        {
+    private void apiDocPerformed(JMenuItem item) {
+        if (RESTConst.CREATE.equals(item.getText())) {
             APIDoc doc = APIUtil.getAPIDoc();
             APIUtil.apiDoc(doc);
             return;
         }
 
-        if (RESTConst.OPEN.equals(item.getText()))
-        {
-            TestUtil.open(RESTConst.APIDOC_HTML, 
-                          RESTConst.MSG_APIDOC, 
-                          RESTConst.API_DOCUMENT);
+        if (RESTConst.OPEN.equals(item.getText())) {
+            TestUtil.open(RESTConst.APIDOC_HTML,
+                    RESTConst.MSG_APIDOC,
+                    RESTConst.API_DOCUMENT);
         }
     }
-    
+
     /**
-    * 
-    * @Title: helpPerformed 
-    * @Description: Help Menu Item Performed 
-    * @param @param item
-    * @return void
-    * @throws
+     *
+     * @Title: helpPerformed
+     * @Description: Help Menu Item Performed
+     * @param @param item
+     * @return void
+     * @throws
      */
-    private void helpPerformed(JMenuItem item)
-    {
-        if (RESTConst.ABOUT_TOOL.equals(item.getText()))
-        {
+    private void helpPerformed(JMenuItem item) {
+        if (RESTConst.ABOUT_TOOL.equals(item.getText())) {
             ad.setVisible(true);
             UIUtil.setLocation(ad);
             return;
         }
 
-        if (RESTConst.DONATE.equals(item.getText()))
-        {
+        if (RESTConst.DONATE.equals(item.getText())) {
             dd.setVisible(true);
             UIUtil.setLocation(dd);
             return;
         }
 
-        if (RESTConst.HELP_CONTENTS.equals(item.getText()))
-        {
-            try
-            {
+        if (RESTConst.HELP_CONTENTS.equals(item.getText())) {
+            try {
                 String path = RESTUtil.replacePath(RESTConst.HELP_DOC);
                 InputStream is = RESTUtil.getInputStream(RESTConst.HELP_DOC);
-                if (null == is)
-                {
+                if (null == is) {
                     return;
                 }
                 FileUtils.copyInputStreamToFile(is, new File(path));
                 RESTUtil.close(is);
-                try
-                {
+                try {
                     Desktop.getDesktop().open(new File(path));
-                }
-                catch(Exception e)
-                {
+                } catch (Exception e) {
                     UIUtil.showMessage(RESTConst.MSG_HELP_FILE, RESTConst.HELP_CONTENTS);
                 }
-            }
-            catch(IOException e)
-            {
+            } catch (IOException e) {
                 log.error("Failed to open help document.", e);
             }
             return;
         }
 
-        if (RESTConst.REPORT_ISSUE.equals(item.getText()))
-        {
-            try
-            {
+        if (RESTConst.REPORT_ISSUE.equals(item.getText())) {
+            try {
                 Desktop.getDesktop().browse(new URI(RESTConst.URL_ISSUE));
-            }
-            catch(Exception e)
-            {
+            } catch (Exception e) {
                 UIUtil.showMessage(RESTConst.MSG_REPORT_ISSUE, RESTConst.REPORT_ISSUE);;
             }
         }
     }
 
-    public void actionPerformed(ActionEvent e)
-    {
+    public void actionPerformed(ActionEvent e) {
         JMenuItem item = (JMenuItem) (e.getSource());
         this.filePerformed(item);
         this.editPerformed(item);
@@ -496,10 +467,8 @@ public class MenuBarView implements ActionListener, PropertyChangeListener
         this.helpPerformed(item);
     }
 
-    public void propertyChange(PropertyChangeEvent evt)
-    {
-        if (!RESTConst.PROGRESS.equals(evt.getPropertyName()))
-        {
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (!RESTConst.PROGRESS.equals(evt.getPropertyName())) {
             return;
         }
 
@@ -509,11 +478,9 @@ public class MenuBarView implements ActionListener, PropertyChangeListener
         String message = String.format("Completed %d%%.\n", progress * 100 / pm.getMaximum());
         pm.setNote(message);
 
-        if (pm.isCanceled() || task.isDone())
-        {
+        if (pm.isCanceled() || task.isDone()) {
             Toolkit.getDefaultToolkit().beep();
-            if (pm.isCanceled())
-            {
+            if (pm.isCanceled()) {
                 task.cancel(true);
                 testThrd.getHists().setStop(true);
                 testThrd.interrupt();
